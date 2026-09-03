@@ -1,0 +1,640 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MAX RESOLVE PEÇAS E LUBRIFICANTES — peças, óleos, graxas, filtros e soluções para linha pesada.">
+  <meta name="theme-color" content="#111827">
+  <title>MAX RESOLVE | Peças e Lubrificantes para Linha Pesada</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            industrial: {
+              950: '#0b1120',
+              900: '#111827',
+              800: '#1f2937',
+              700: '#374151'
+            },
+            amberx: '#f59e0b',
+            whatsapp: '#22c55e'
+          },
+          boxShadow: {
+            industrial: '0 20px 60px rgba(0,0,0,.35)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background:#111827; }
+    ::selection { background:#f59e0b; color:#111827; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .hero-overlay {
+      background:
+        linear-gradient(90deg, rgba(17,24,39,.98) 0%, rgba(17,24,39,.86) 44%, rgba(17,24,39,.35) 100%);
+    }
+    .glass {
+      background: rgba(31,41,55,.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .card-image { transition: transform .5s ease; }
+    .product-card:hover .card-image { transform: scale(1.06); }
+    .product-card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.28);
+      border-color: rgba(245,158,11,.5);
+    }
+    .pulse {
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.45); }
+      50% { box-shadow: 0 0 0 15px rgba(34,197,94,0); }
+    }
+    .drawer { transition: transform .3s ease; }
+    .drawer.closed { transform: translateX(100%); }
+    .drawer-backdrop { transition: opacity .3s ease; }
+    .drawer-backdrop.hidden-backdrop {
+      opacity:0;
+      pointer-events:none;
+    }
+    .filter-btn.active {
+      background:#f59e0b;
+      color:#111827;
+      border-color:#f59e0b;
+    }
+    .toast {
+      transform: translateY(20px);
+      opacity:0;
+      pointer-events:none;
+      transition: all .25s ease;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity:1;
+    }
+  </style>
+</head>
+
+<body class="text-white antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 border-b border-white/10 bg-industrial-950/95 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <a href="#inicio" class="flex min-w-0 items-center gap-3">
+        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amberx text-industrial-900 shadow-lg shadow-amber-500/20">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+            <path d="M3 17h18M5 17V9l3-2h8l3 2v8M8 7V4h8v3M7 17v3M17 17v3"/>
+            <circle cx="7" cy="17" r="2"/>
+            <circle cx="17" cy="17" r="2"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="truncate text-sm font-black tracking-tight sm:text-base">MAX RESOLVE</div>
+          <div class="truncate text-[10px] font-bold uppercase tracking-[.2em] text-amber-400">Peças & Lubrificantes</div>
+        </div>
+      </a>
+
+      <div class="ml-auto hidden max-w-md flex-1 md:block">
+        <label class="relative block">
+          <span class="sr-only">Buscar produto</span>
+          <input id="searchInput" type="search" placeholder="Buscar óleo, filtro, graxa..."
+            class="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-gray-500 focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/10">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
+          </svg>
+        </label>
+      </div>
+
+      <a href="#contato" class="hidden rounded-xl border border-white/10 px-4 py-2.5 text-sm font-bold transition hover:border-amber-400/50 hover:bg-white/5 sm:block">
+        Contato
+      </a>
+
+      <button id="openCart" class="relative rounded-xl bg-amberx px-3 py-2.5 font-black text-industrial-900 transition hover:bg-amber-300" aria-label="Abrir orçamento">
+        <span class="flex items-center gap-2">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H6"/>
+            <circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>
+          </svg>
+          <span class="hidden sm:inline">Orçamento</span>
+        </span>
+        <span id="cartCount" class="absolute -right-2 -top-2 grid h-6 min-w-6 place-items-center rounded-full border-2 border-industrial-950 bg-white px-1 text-xs font-black text-industrial-900">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="inicio">
+
+    <!-- HERO -->
+    <section class="relative isolate min-h-[650px] overflow-hidden">
+      <img
+        src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1800&q=85"
+        alt="Caminhão de carga pesado em estrada"
+        class="absolute inset-0 -z-20 h-full w-full object-cover"
+        onerror="this.style.display='none';"
+      >
+      <div class="hero-overlay absolute inset-0 -z-10"></div>
+      <div class="absolute inset-0 -z-10 bg-gradient-to-t from-industrial-900 via-transparent to-industrial-900/30"></div>
+
+      <div class="mx-auto flex min-h-[650px] max-w-7xl items-center px-4 py-20 sm:px-6 lg:px-8">
+        <div class="max-w-3xl">
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.15em] text-amber-300">
+            <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+            Especialistas em Linha Pesada
+          </div>
+
+          <h1 class="text-4xl font-black leading-[1.03] tracking-tight sm:text-5xl lg:text-7xl">
+            Soluções em Peças e
+            <span class="text-amber-400">Lubrificantes</span>
+            para Linha Pesada
+          </h1>
+
+          <p class="mt-6 max-w-2xl text-base leading-7 text-gray-300 sm:text-lg">
+            Produtos para caminhões de carga, frota diesel, maquinário agrícola e linha amarela.
+            Atendimento direto para quem precisa manter o equipamento trabalhando.
+          </p>
+
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href="#catalogo" class="inline-flex items-center justify-center gap-2 rounded-xl bg-amberx px-6 py-3.5 font-black text-industrial-900 shadow-xl shadow-amber-500/20 transition hover:bg-amber-300">
+              Ver catálogo
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+            <a href="https://wa.me/559491793342?text=Ol%C3%A1%2C%20Max%20Resolve%21%20Quero%20consultar%20produtos%20para%20linha%20pesada."
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-3.5 font-black text-white shadow-xl shadow-green-500/20 transition hover:bg-green-400">
+              Falar no WhatsApp
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12.05 0C5.5 0 .17 5.33.17 11.88c0 2.09.55 4.13 1.59 5.93L.08 24l6.34-1.66a11.86 11.86 0 0 0 5.62 1.42h.01c6.55 0 11.88-5.33 11.88-11.88 0-3.18-1.24-6.17-3.43-8.38Zm-8.45 18.2h-.01a9.82 9.82 0 0 1-5.01-1.37l-.36-.21-3.76.99 1-3.66-.23-.38a9.84 9.84 0 1 1 8.37 4.63Zm5.4-7.38c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.23-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.76-1.67-2.06-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.64-.93-2.24-.25-.59-.5-.51-.68-.52h-.58c-.2 0-.53.08-.81.38-.28.3-1.06 1.04-1.06 2.54s1.09 2.95 1.24 3.15c.15.2 2.15 3.28 5.2 4.6.73.32 1.3.51 1.74.65.73.23 1.39.2 1.91.12.58-.09 1.78-.73 2.03-1.44.25-.71.25-1.32.18-1.45-.08-.13-.28-.2-.58-.35Z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIFFERENTIALS -->
+    <section class="border-y border-white/5 bg-industrial-950 py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-10 max-w-2xl">
+          <p class="text-xs font-black uppercase tracking-[.2em] text-amber-400">Por que Max Resolve?</p>
+          <h2 class="mt-2 text-3xl font-black sm:text-4xl">Feita para a operação pesada.</h2>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-2xl border border-white/10 bg-white/[.03] p-6">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-amber-400/10 text-amber-400">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M20 12h-9M20 17h-9M4 7h.01M4 12h.01M4 17h.01"/></svg>
+            </div>
+            <h3 class="font-black">Atendimento especializado</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-400">Foco em frota pesada, diesel, máquinas e operação profissional.</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/[.03] p-6">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-amber-400/10 text-amber-400">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.2 4.5 5 .7-3.6 3.5.85 5-4.45-2.35L7.55 16.7l.85-5-3.6-3.5 5-.7L12 3Z"/></svg>
+            </div>
+            <h3 class="font-black">Alta resistência</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-400">Soluções pensadas para rotinas exigentes e equipamentos pesados.</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/[.03] p-6">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-amber-400/10 text-amber-400">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            </div>
+            <h3 class="font-black">Entrega rápida</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-400">Agilidade para reduzir parada e manter sua operação em movimento.</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/[.03] p-6">
+            <div class="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-amber-400/10 text-amber-400">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 8 4v5c0 4.4-3.4 7.8-8 9-4.6-1.2-8-4.6-8-9V7l8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <h3 class="font-black">Preço justo</h3>
+            <p class="mt-2 text-sm leading-6 text-gray-400">Consulte disponibilidade e condições diretamente com nossa equipe.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATALOG -->
+    <section id="catalogo" class="grid-bg py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[.2em] text-amber-400">Vitrine técnica</p>
+            <h2 class="mt-2 text-3xl font-black sm:text-4xl">Produtos para linha pesada</h2>
+            <p class="mt-3 max-w-2xl text-gray-400">Selecione os itens que deseja consultar e monte sua lista de orçamento.</p>
+          </div>
+
+          <div class="md:hidden">
+            <input id="mobileSearchInput" type="search" placeholder="Buscar produto..."
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-amber-400/60">
+          </div>
+        </div>
+
+        <div class="mt-8 flex gap-2 overflow-x-auto pb-2" id="filters">
+          <button data-filter="Todos" class="filter-btn active shrink-0 rounded-full border border-white/10 px-4 py-2 text-sm font-bold transition">Todos</button>
+          <button data-filter="Caminhões" class="filter-btn shrink-0 rounded-full border border-white/10 px-4 py-2 text-sm font-bold transition hover:border-amber-400/50">Caminhões</button>
+          <button data-filter="Máquinas & Agrícola" class="filter-btn shrink-0 rounded-full border border-white/10 px-4 py-2 text-sm font-bold transition hover:border-amber-400/50">Máquinas & Agrícola</button>
+          <button data-filter="Óleos & Lubrificantes" class="filter-btn shrink-0 rounded-full border border-white/10 px-4 py-2 text-sm font-bold transition hover:border-amber-400/50">Óleos & Lubrificantes</button>
+          <button data-filter="Filtros" class="filter-btn shrink-0 rounded-full border border-white/10 px-4 py-2 text-sm font-bold transition hover:border-amber-400/50">Filtros</button>
+        </div>
+
+        <div id="productGrid" class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+        <div id="emptyState" class="hidden py-20 text-center">
+          <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white/5 text-gray-500">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          </div>
+          <h3 class="mt-4 text-lg font-black">Nenhum produto encontrado</h3>
+          <p class="mt-2 text-sm text-gray-500">Tente outro termo ou categoria.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contato" class="border-t border-white/5 bg-industrial-950 py-20">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-8 lg:grid-cols-[.9fr_1.1fr]">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[.2em] text-amber-400">Contato direto</p>
+            <h2 class="mt-2 text-3xl font-black sm:text-4xl">Fale com a Max Resolve.</h2>
+            <p class="mt-4 max-w-xl leading-7 text-gray-400">
+              Consulte preço, disponibilidade e aplicação para seu caminhão, frota ou maquinário.
+            </p>
+
+            <div class="mt-8 space-y-4">
+              <a href="https://wa.me/559491793342" target="_blank" rel="noopener noreferrer"
+                 class="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.03] p-4 transition hover:border-green-500/40">
+                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-green-500/10 text-green-400">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12.05 0C5.5 0 .17 5.33.17 11.88c0 2.09.55 4.13 1.59 5.93L.08 24l6.34-1.66a11.86 11.86 0 0 0 5.62 1.42h.01c6.55 0 11.88-5.33 11.88-11.88 0-3.18-1.24-6.17-3.43-8.38Z"/></svg>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wider text-gray-500">WhatsApp</p>
+                  <p class="mt-1 font-black">(94) 99179-3342</p>
+                </div>
+              </a>
+
+              <div class="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.03] p-4">
+                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-400">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                </div>
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Atendimento</p>
+                  <p class="mt-1 font-black">Consulte nosso horário pelo WhatsApp</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-industrial">
+            <iframe
+              title="Localização no Google Maps"
+              src="https://www.google.com/maps?q=Redenção%2C%20Pará%2C%20Brasil&output=embed"
+              width="100%" height="420" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/10 bg-industrial-950">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+      <div>
+        <span class="font-black text-gray-300">MAX RESOLVE</span> — Peças e Lubrificantes
+      </div>
+      <div>© <span id="year"></span> Max Resolve. Todos os direitos reservados.</div>
+    </div>
+  </footer>
+
+  <!-- CART BACKDROP -->
+  <div id="cartBackdrop" class="drawer-backdrop hidden-backdrop fixed inset-0 z-50 bg-black/70"></div>
+
+  <!-- CART DRAWER -->
+  <aside id="cartDrawer" class="drawer closed fixed right-0 top-0 z-[60] flex h-full w-full max-w-md flex-col border-l border-white/10 bg-industrial-950 shadow-2xl" aria-label="Orçamento">
+    <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[.18em] text-amber-400">Sua lista</p>
+        <h2 class="mt-1 text-xl font-black">Orçamento</h2>
+      </div>
+      <button id="closeCart" class="grid h-10 w-10 place-items-center rounded-xl bg-white/5 text-gray-300 hover:bg-white/10" aria-label="Fechar">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <div id="cartItems" class="flex-1 overflow-y-auto p-5"></div>
+
+    <div class="border-t border-white/10 bg-industrial-900 p-5">
+      <div class="mb-4 flex items-center justify-between text-sm">
+        <span class="text-gray-400">Itens selecionados</span>
+        <strong id="cartTotal" class="text-lg text-amber-400">0</strong>
+      </div>
+      <button id="sendQuote" class="w-full rounded-xl bg-whatsapp px-5 py-3.5 font-black text-white transition hover:bg-green-400 disabled:cursor-not-allowed disabled:opacity-40">
+        Enviar Lista via WhatsApp
+      </button>
+      <button id="clearCart" class="mt-2 w-full rounded-xl border border-white/10 px-5 py-3 text-sm font-bold text-gray-400 transition hover:bg-white/5">
+        Limpar lista
+      </button>
+    </div>
+  </aside>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast fixed bottom-24 left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-white/10 bg-industrial-950 px-5 py-3 text-sm font-bold shadow-2xl">
+    Produto adicionado ao orçamento.
+  </div>
+
+  <!-- FLOATING WHATSAPP -->
+  <a href="https://wa.me/559491793342?text=Ol%C3%A1%2C%20Max%20Resolve%21%20Vim%20pelo%20site%20e%20quero%20consultar%20um%20produto."
+     target="_blank" rel="noopener noreferrer"
+     class="pulse fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-whatsapp text-white shadow-2xl shadow-green-500/30 transition hover:scale-105"
+     aria-label="Falar no WhatsApp">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12.05 0C5.5 0 .17 5.33.17 11.88c0 2.09.55 4.13 1.59 5.93L.08 24l6.34-1.66a11.86 11.86 0 0 0 5.62 1.42h.01c6.55 0 11.88-5.33 11.88-11.88 0-3.18-1.24-6.17-3.43-8.38Zm-8.45 18.2h-.01a9.82 9.82 0 0 1-5.01-1.37l-.36-.21-3.76.99 1-3.66-.23-.38a9.84 9.84 0 1 1 8.37 4.63Zm5.4-7.38c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.23-.65.08-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.76-1.67-2.06-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.68-1.64-.93-2.24-.25-.59-.5-.51-.68-.52h-.58c-.2 0-.53.08-.81.38-.28.3-1.06 1.04-1.06 2.54s1.09 2.95 1.24 3.15c.15.2 2.15 3.28 5.2 4.6.73.32 1.3.51 1.74.65.73.23 1.39.2 1.91.12.58-.09 1.78-.73 2.03-1.44.25-.71.25-1.32.18-1.45-.08-.13-.28-.2-.58-.35Z"/></svg>
+  </a>
+
+  <script>
+    const WHATSAPP = "559491793342";
+
+    const products = [
+      {
+        id: 1,
+        name: "Óleo Diesel 15W40",
+        application: "Para motores de caminhões e frota diesel",
+        category: "Óleos & Lubrificantes",
+        tags: ["Caminhões", "Óleo"],
+        image: "https://i.pinimg.com/736x/cc/99/fd/cc99fdd4eddc6683e134f8c1f52311d8.jpg"
+      },
+      {
+        id: 2,
+        name: "Pastilhas de Freio",
+        application: "Para caminhoes e maquinas",
+        category: "Máquinas & Agrícola",
+        tags: ["Máquinas", "Hidráulico"],
+        image: "https://i.pinimg.com/736x/20/50/58/20505883ba273e990d77de4af6b56a12.jpg"
+      },
+      {
+        id: 3,
+        name: "Filtro De Ar",
+        application: "Maquina e caminhão pesado",
+        category: "Óleos & Lubrificantes",
+        tags: ["", "Manutenção"],
+        image: "https://i.pinimg.com/736x/c7/a3/d1/c7a3d1bf72a7496fd45426ca3fc526f2.jpg"
+      },
+      {
+        id: 4,
+        name: "Filtro Separador de Água/Diesel",
+        application: "Filtragem e proteção do sistema de combustível",
+        category: "Filtros",
+        tags: ["Filtro", "Diesel"],
+        image: "https://i.pinimg.com/736x/a4/5a/3d/a45a3d84991f225327e2b66320ba25a4.jpg"
+      },
+      {
+        id: 5,
+        name: "Fluido de Transmissão Pesada CAT TO-4",
+        application: "Aplicações em tratores e máquinas de trabalho",
+        category: "Máquinas & Agrícola",
+        tags: ["Tratores", "Transmissão"],
+        image: "https://i.pinimg.com/736x/3d/19/ec/3d19ec635d2b3c7d2294fa073314e2ba.jpg"
+      },
+      {
+        id: 6,
+        name: "Aditivo Concentrado para Radiadores",
+        application: "Sistemas de arrefecimento de motores diesel",
+        category: "Caminhões",
+        tags: ["Caminhões", "Arrefecimento"],
+        image: "https://i.pinimg.com/736x/32/fd/81/32fd8135884260148241cbcc2dc4d00a.jpg"
+      }
+    ];
+
+    let activeFilter = "Todos";
+    let cart = [];
+
+    const grid = document.getElementById("productGrid");
+    const emptyState = document.getElementById("emptyState");
+    const searchInput = document.getElementById("searchInput");
+    const mobileSearchInput = document.getElementById("mobileSearchInput");
+    const cartDrawer = document.getElementById("cartDrawer");
+    const cartBackdrop = document.getElementById("cartBackdrop");
+    const cartItems = document.getElementById("cartItems");
+    const cartCount = document.getElementById("cartCount");
+    const cartTotal = document.getElementById("cartTotal");
+    const toast = document.getElementById("toast");
+
+    function productCard(product) {
+      const message = encodeURIComponent(
+        `Olá, Max Resolve! Vi no site o produto ${product.name} para linha pesada e quero consultar preço/disponibilidade.`
+      );
+
+      return `
+        <article class="product-card overflow-hidden rounded-2xl border border-white/10 bg-industrial-800/80" data-id="${product.id}">
+          <div class="relative h-56 overflow-hidden bg-industrial-900">
+            <img
+              src="${product.image}"
+              alt="${product.name} — ${product.application}"
+              loading="lazy"
+              class="card-image h-full w-full object-cover"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80';"
+            >
+            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-industrial-800 to-transparent"></div>
+            <span class="absolute left-4 top-4 rounded-full bg-industrial-950/85 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300 backdrop-blur">
+              ${product.category}
+            </span>
+          </div>
+
+          <div class="p-5">
+            <div class="flex flex-wrap gap-1.5">
+              ${product.tags.map(tag => `<span class="rounded-md bg-white/5 px-2 py-1 text-[10px] font-bold text-gray-400">${tag}</span>`).join("")}
+            </div>
+
+            <h3 class="mt-3 text-lg font-black leading-tight">${product.name}</h3>
+            <p class="mt-2 min-h-[48px] text-sm leading-6 text-gray-400">${product.application}</p>
+
+            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+              <a
+                href="https://wa.me/${WHATSAPP}?text=${message}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-3 py-3 text-sm font-black text-white transition hover:bg-green-400"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11.9 11.9 0 0 0 12.05 0C5.5 0 .17 5.33.17 11.88c0 2.09.55 4.13 1.59 5.93L.08 24l6.34-1.66a11.86 11.86 0 0 0 5.62 1.42h.01c6.55 0 11.88-5.33 11.88-11.88 0-3.18-1.24-6.17-3.43-8.38Z"/></svg>
+                Pedir no Zap
+              </a>
+              <button
+                data-add="${product.id}"
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-black text-white transition hover:border-amber-400/50 hover:bg-amber-400/10"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 5v14M5 12h14"/></svg>
+                Adicionar
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderProducts() {
+      const query = (searchInput.value || mobileSearchInput.value || "").trim().toLowerCase();
+
+      const filtered = products.filter(p => {
+        const categoryMatch =
+          activeFilter === "Todos" ||
+          p.category === activeFilter ||
+          (activeFilter === "Caminhões" && p.tags.includes("Caminhões")) ||
+          (activeFilter === "Filtros" && p.category === "Filtros");
+
+        const text = `${p.name} ${p.application} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
+        return categoryMatch && text.includes(query);
+      });
+
+      grid.innerHTML = filtered.map(productCard).join("");
+      emptyState.classList.toggle("hidden", filtered.length !== 0);
+
+      grid.querySelectorAll("[data-add]").forEach(btn => {
+        btn.addEventListener("click", () => addToCart(Number(btn.dataset.add)));
+      });
+    }
+
+    function addToCart(id) {
+      if (!cart.includes(id)) {
+        cart.push(id);
+        updateCart();
+        showToast("Produto adicionado ao orçamento.");
+      } else {
+        showToast("Esse produto já está na sua lista.");
+      }
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(item => item !== id);
+      updateCart();
+    }
+
+    function updateCart() {
+      cartCount.textContent = cart.length;
+      cartTotal.textContent = cart.length;
+
+      if (!cart.length) {
+        cartItems.innerHTML = `
+          <div class="flex h-full min-h-[300px] flex-col items-center justify-center text-center">
+            <div class="grid h-16 w-16 place-items-center rounded-2xl bg-white/5 text-gray-500">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+            </div>
+            <h3 class="mt-4 font-black">Sua lista está vazia</h3>
+            <p class="mt-2 max-w-xs text-sm leading-6 text-gray-500">Adicione produtos do catálogo para montar seu orçamento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(id => {
+        const p = products.find(x => x.id === id);
+        return `
+          <div class="mb-3 flex gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3">
+            <img src="${p.image}" alt="" class="h-16 w-16 shrink-0 rounded-xl object-cover" onerror="this.style.display='none'">
+            <div class="min-w-0 flex-1">
+              <h4 class="truncate font-black">${p.name}</h4>
+              <p class="mt-1 text-xs leading-5 text-gray-500">${p.application}</p>
+              <button data-remove="${p.id}" class="mt-2 text-xs font-bold text-red-400 hover:text-red-300">Remover</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      cartItems.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", () => removeFromCart(Number(btn.dataset.remove)));
+      });
+    }
+
+    function openCart() {
+      cartDrawer.classList.remove("closed");
+      cartBackdrop.classList.remove("hidden-backdrop");
+      document.body.classList.add("overflow-hidden");
+    }
+
+    function closeCart() {
+      cartDrawer.classList.add("closed");
+      cartBackdrop.classList.add("hidden-backdrop");
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function syncSearch(source, target) {
+      source.addEventListener("input", () => {
+        target.value = source.value;
+        renderProducts();
+      });
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeFilter = btn.dataset.filter;
+        renderProducts();
+      });
+    });
+
+    document.getElementById("openCart").addEventListener("click", openCart);
+    document.getElementById("closeCart").addEventListener("click", closeCart);
+    cartBackdrop.addEventListener("click", closeCart);
+
+    document.getElementById("clearCart").addEventListener("click", () => {
+      cart = [];
+      updateCart();
+      showToast("Lista limpa.");
+    });
+
+    document.getElementById("sendQuote").addEventListener("click", () => {
+      if (!cart.length) {
+        showToast("Adicione pelo menos um produto.");
+        return;
+      }
+
+      const lines = cart.map((id, index) => {
+        const p = products.find(x => x.id === id);
+        return `${index + 1}. ${p.name} — ${p.application}`;
+      });
+
+      const text =
+        `Olá, Max Resolve! Quero fazer um orçamento para linha pesada.\n\n` +
+        `Produtos selecionados:\n${lines.join("\n")}\n\n` +
+        `Gostaria de consultar preço e disponibilidade.`;
+
+      window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    });
+
+    syncSearch(searchInput, mobileSearchInput);
+    syncSearch(mobileSearchInput, searchInput);
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    renderProducts();
+    updateCart();
+  </script>
+</body>
+</html>
+'''
+
+path = Path("/mnt/data/index.html")
+path.write_text(html, encoding="utf-8")
+print(f"Arquivo criado: {path}")
+print(f"Tamanho: {path.stat().st_size:,} bytes")
